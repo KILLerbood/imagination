@@ -223,27 +223,27 @@
   window.Demos && window.Demos.init();
   window.VisionStudio && window.VisionStudio.init();
 
+  // Loader: driven by plain timers (not the animation ticker) and never waits for the 3D scene,
+  // so a slow GPU / in-app browser can't leave the visitor stuck on the loading screen.
   const pctEl = $('#loaderPct'), barEl = $('#loaderBar');
-  const prog = { v: 0 };
-  const loadTween = gsap.to(prog, { v: 88, duration: 2.4, ease: 'power2.out', onUpdate: () => { pctEl.textContent = Math.round(prog.v); barEl.style.width = prog.v + '%'; } });
+  let pct = 0;
+  const paint = () => { pctEl.textContent = Math.round(pct); barEl.style.width = pct + '%'; };
+  const creep = setInterval(() => { pct += (90 - pct) * .12; paint(); }, 100);
   let booted = false;
   function finish() {
     if (booted) return; booted = true;
-    loadTween.kill();
-    gsap.to(prog, {
-      v: 100, duration: .45, ease: 'power2.inOut',
-      onUpdate: () => { pctEl.textContent = Math.round(prog.v); barEl.style.width = prog.v + '%'; },
-      onComplete: () => {
-        gsap.to('#loader', { opacity: 0, duration: .7, ease: 'power2.out', onComplete: () => $('#loader').remove() });
-        document.body.classList.remove('is-loading');
-        ScrollTrigger.refresh();
-        heroIntro();
-      }
-    });
+    clearInterval(creep); pct = 100; paint();
+    const loader = $('#loader');
+    loader.style.transition = 'opacity .6s ease'; loader.style.opacity = '0'; loader.style.pointerEvents = 'none';
+    setTimeout(() => loader.remove(), 700);
+    document.body.classList.remove('is-loading');
+    ScrollTrigger.refresh();
+    heroIntro();
+    // start the 3D only once the page is on screen and usable
+    setTimeout(() => window.dispatchEvent(new Event('start-scene')), 400);
   }
   const fontsReady = document.fonts ? document.fonts.ready : Promise.resolve();
-  let sceneReady = false;
-  addEventListener('scene-ready', () => { sceneReady = true; fontsReady.then(() => setTimeout(finish, 250)); });
-  setTimeout(() => { if (!sceneReady) finish(); }, 5000);
+  Promise.race([fontsReady, new Promise(r => setTimeout(r, 1800))]).then(() => setTimeout(finish, 200));
+  setTimeout(finish, 3000);   // hard cap whatever happens
   addEventListener('load', () => ScrollTrigger.refresh());
 })();

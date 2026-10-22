@@ -44,7 +44,7 @@ button { cursor: pointer; background: none; border: 0; padding: 0; }
 :focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; border-radius: 8px; }
 
 /* ============ Global layers ============ */
-#webgl { position: fixed; inset: 0; width: 100vw; height: 100lvh; height: 100vh; z-index: 0; pointer-events: none; transition: opacity .6s; }
+#webgl { position: fixed; inset: 0; width: 100vw; height: 100lvh; height: 100vh; z-index: 0; pointer-events: none; opacity: 0; transition: opacity .6s; }
 @supports (height: 100lvh) { #webgl { height: 100lvh; } }
 .grain {
   position: fixed; inset: -50%; z-index: 1; pointer-events: none; opacity: .055;

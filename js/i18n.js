@@ -158,6 +158,7 @@
     'f.tag': 'AI tools for companies that build the future.',
     'f.product': 'Product', 'f.company': 'Company', 'f.legal': 'Legal',
     'f.about': 'About', 'f.careers': 'Careers', 'f.contact': 'Contact', 'f.privacy': 'Privacy', 'f.terms': 'Terms',
+    'f.3dOn': 'Turn on full 3D', 'f.3dOff': 'Switch to light mode',
     'f.rights': '© 2026 Imagination. All rights reserved.'
   };
 
@@ -319,6 +320,7 @@
     'f.tag': 'أدوات ذكاء اصطناعي للشركات التي تبني المستقبل.',
     'f.product': 'المنتج', 'f.company': 'الشركة', 'f.legal': 'قانوني',
     'f.about': 'من نحن', 'f.careers': 'الوظائف', 'f.contact': 'تواصل معنا', 'f.privacy': 'الخصوصية', 'f.terms': 'الشروط',
+    'f.3dOn': 'تشغيل الـ 3D الكامل', 'f.3dOff': 'التحويل للوضع الخفيف',
     'f.rights': '© 2026 Imagination. جميع الحقوق محفوظة.'
   };
 
@@ -480,6 +482,7 @@
     'f.tag': 'KI-Werkzeuge für Unternehmen, die die Zukunft bauen.',
     'f.product': 'Produkt', 'f.company': 'Unternehmen', 'f.legal': 'Rechtliches',
     'f.about': 'Über uns', 'f.careers': 'Karriere', 'f.contact': 'Kontakt', 'f.privacy': 'Datenschutz', 'f.terms': 'AGB',
+    'f.3dOn': 'Volles 3D einschalten', 'f.3dOff': 'Zum leichten Modus wechseln',
     'f.rights': '© 2026 Imagination. Alle Rechte vorbehalten.'
   };
 
@@ -641,6 +644,7 @@
     'f.tag': 'ИИ-инструменты для компаний, которые строят будущее.',
     'f.product': 'Продукт', 'f.company': 'Компания', 'f.legal': 'Право',
     'f.about': 'О нас', 'f.careers': 'Карьера', 'f.contact': 'Контакты', 'f.privacy': 'Конфиденциальность', 'f.terms': 'Условия',
+    'f.3dOn': 'Включить полный 3D', 'f.3dOff': 'Перейти в лёгкий режим',
     'f.rights': '© 2026 Imagination. Все права защищены.'
   };
 

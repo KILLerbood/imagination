@@ -76,6 +76,7 @@
       window.Demos && window.Demos.onLang();
       window.Voice && window.Voice.onLang();
       window.VisionStudio && window.VisionStudio.onLang();
+      window.dispatchEvent(new Event('imgn-lang'));
       requestAnimationFrame(() => ScrollTrigger.refresh());
     }
   }
@@ -102,9 +103,18 @@
     if (horizTween) { horizTween.scrollTrigger.kill(true); horizTween.kill(); horizTween = null; }
     const wrap = $('.horiz-gallery-wrapper'), strip = $('.horiz-gallery-strip');
     gsap.set(strip, { x: 0 });
-    // Phones/tablets: no pinned sideways scroll. Moving one ~3000px-wide layer with a 3x screen made
-    // iOS Safari run out of GPU memory right after this section. A native swipe row costs nothing.
-    if (!fine) { wrap.classList.add('is-swipe'); return; }
+    // Phones/tablets keep the pinned sideways scroll, but move each card on its own with plain 2D
+    // transforms (no 3D/GPU layer for a ~2600px-wide strip, which iOS can't afford on a 3x screen).
+    if (!fine) {
+      const items = [...strip.children];
+      const d = () => Math.max(0, strip.scrollWidth - window.innerWidth);
+      horizTween = gsap.to(items, {
+        x: () => (document.documentElement.dir === 'rtl' ? 1 : -1) * d(),
+        ease: 'none', force3D: false,
+        scrollTrigger: { trigger: wrap, start: 'top top', end: () => '+=' + d(), pin: true, scrub: true, invalidateOnRefresh: true, refreshPriority: 1 }
+      });
+      return;
+    }
     const dist = () => Math.max(0, strip.scrollWidth - window.innerWidth);
     horizTween = gsap.to(strip, {
       x: () => (document.documentElement.dir === 'rtl' ? 1 : -1) * dist(),
@@ -216,6 +226,23 @@
     window.IMAGINATION_SCENE && window.IMAGINATION_SCENE.wake();
     $('#ctaEmail').value = '';
   });
+
+  /* ---------- build tag + phone 3D switch ---------- */
+  function paintBuild() {
+    $('#buildTag').textContent = 'build ' + (window.IMGN_BUILD || '');
+    const tg = $('#threeToggle');
+    tg.hidden = !window.IMGN_MOBILE;
+    tg.textContent = document.documentElement.classList.contains('lite') ? I.t('f.3dOn') : I.t('f.3dOff');
+  }
+  $('#threeToggle').addEventListener('click', () => {
+    try {
+      if (document.documentElement.classList.contains('lite')) { localStorage.removeItem('imgn-lite'); sessionStorage.removeItem('imgn-alive'); }
+      else localStorage.setItem('imgn-lite', '1');
+    } catch (e) {}
+    location.reload();
+  });
+  paintBuild();
+  addEventListener('imgn-lang', paintBuild);
 
   /* ---------- boot ---------- */
   buildHoriz();

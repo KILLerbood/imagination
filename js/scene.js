@@ -21,7 +21,7 @@ try {
 // quality tiers: 2 = high (desktop), 1 = medium, 0 = low
 let tier = isMobile ? 1 : 2;
 // iPhones report devicePixelRatio 3: a 3x full-screen buffer alone can exhaust Safari's budget
-const dprFor = t => Math.min(window.devicePixelRatio || 1, isMobile ? [0.9, 1.5, 1.5][t] : [1, 1.5, 2][t]);
+const dprFor = t => Math.min(window.devicePixelRatio || 1, isMobile ? [0.75, 1, 1.25][t] : [1, 1.5, 2][t]);
 renderer.setPixelRatio(dprFor(tier));
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -245,7 +245,8 @@ let first = true, t = 0;
 const lerp = (a, b, k) => a + (b - a) * k;
 function tick() {
   const dt = Math.min(clock.getDelta(), .1);
-  const speed = reduce ? .25 : 1;
+  // phones: same scene, calmer motion in the background
+  const speed = reduce ? .25 : isMobile ? .55 : 1;
   t += dt * speed;
   const tg = target();
   const k = 1 - Math.pow(.0025, dt);
@@ -258,7 +259,7 @@ function tick() {
 
   rig.position.set(cur.x + pointer.x * .18, cur.y - pointer.y * .12 + Math.sin(t * .6) * .05, 0);
   rig.scale.setScalar(cur.s * (1 + pulse * .08));
-  rig.rotation.y += dt * (.12 + v * .6 + spinBoost) * speed;
+  rig.rotation.y += dt * (.12 + v * (isMobile ? .15 : .6) + spinBoost) * speed;
   rig.rotation.x = lerp(rig.rotation.x, pointer.y * .25, .05);
 
   coreUniforms.uTime.value = t;
@@ -282,7 +283,9 @@ function tick() {
   if (op !== lastOp) { canvas.style.opacity = op; lastOp = op; }
   // phones: while the scene is only a faint backdrop (demo sections), draw every 3rd frame
   frameNo++;
-  if (!(isMobile && cur.dim < .35 && frameNo % 3)) renderer.render(scene, camera);
+  // and every 2nd frame while the pinned tools strip is moving, so the GPU isn't doing two jobs at once
+  const skip = isMobile && ((cur.dim < .35 && frameNo % 3) || (stateName === 'caps' && frameNo % 2));
+  if (!skip) renderer.render(scene, camera);
   adapt(dt);
   if (first) { first = false; ready(); }
   if (!contextLost) requestAnimationFrame(tick);

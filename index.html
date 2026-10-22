@@ -11,7 +11,25 @@
   // iOS crash guard: if the previous visit ended without a clean "pagehide" (the tab was killed),
   // open this visit in a light mode without WebGL so it can never crash twice in a row.
   try {
-    if (sessionStorage.getItem('imgn-alive') === '1' || /[?&]lite=1/.test(location.search)) document.documentElement.classList.add('lite');
+    // Full 3D everywhere; the light (no-WebGL) mode is only a crash fallback or the visitor's own choice.
+    var q = location.search, mobile = matchMedia('(pointer: coarse), (hover: none)').matches || /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if (sessionStorage.getItem('imgn-alive') === '1' || /[?&]lite=1/.test(q) || localStorage.getItem('imgn-lite') === '1') document.documentElement.classList.add('lite');
+    window.IMGN_BUILD = 'v6';
+    window.IMGN_MOBILE = mobile;
+    // ?debug=1 : on-screen diagnostics the visitor can screenshot (build, device, mode, errors)
+    if (/[?&]debug=1/.test(q)) {
+      var errs = [];
+      addEventListener('error', function (e) { errs.push('ERR ' + (e.message || (e.target && (e.target.src || e.target.href)) || e.type)); show(); }, true);
+      addEventListener('unhandledrejection', function (e) { errs.push('PROMISE ' + (e.reason && (e.reason.message || e.reason))); show(); });
+      var show = function () {
+        var b = document.getElementById('imgnDebug');
+        if (!b) { if (!document.body) return; b = document.createElement('div'); b.id = 'imgnDebug'; document.body.appendChild(b); }
+        b.textContent = 'build ' + window.IMGN_BUILD + ' | lite ' + document.documentElement.classList.contains('lite') + ' | mobile ' + mobile +
+          '\nscreen ' + screen.width + 'x' + screen.height + ' @' + devicePixelRatio + 'x | viewport ' + innerWidth + 'x' + innerHeight +
+          '\nmemory ' + (navigator.deviceMemory || '?') + 'GB | ' + navigator.userAgent + '\n' + (errs.length ? errs.slice(-12).join('\n') : 'no errors');
+      };
+      addEventListener('DOMContentLoaded', show); setInterval(show, 2000);
+    }
     sessionStorage.setItem('imgn-alive', '1');
     addEventListener('pagehide', function () { sessionStorage.removeItem('imgn-alive'); });
     document.addEventListener('visibilitychange', function () {
@@ -22,7 +40,7 @@
 </script><link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=5">
+<link rel="stylesheet" href="css/style.css?v=6">
 <script type="importmap">
 { "imports": {
   "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
@@ -753,7 +771,9 @@
     <div class="f-col"><b data-i18n="f.legal"></b><a href="#top" data-i18n="f.privacy"></a><a href="#top" data-i18n="f.terms"></a></div>
   </div>
   <div class="footer-giant" aria-hidden="true">IMAGINATION</div>
-  <div class="footer-bottom"><span data-i18n="f.rights"></span></div>
+  <div class="footer-bottom"><span data-i18n="f.rights"></span>
+    <div class="build-row"><button class="three-toggle" id="threeToggle" hidden></button><span id="buildTag"></span></div>
+  </div>
   <div class="made-by">Made by Magmafy</div>
 </footer>
 
@@ -763,18 +783,18 @@
 <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollSmoother.min.js"></script>
-<script defer src="js/i18n.js?v=5"></script>
-<script defer src="js/demos.js?v=5"></script>
-<script defer src="js/vision.js?v=5"></script>
-<script defer src="js/main.js?v=5"></script>
-<script defer src="js/voice.js?v=5"></script>
-<script defer src="js/avatar.js?v=5"></script>
+<script defer src="js/i18n.js?v=6"></script>
+<script defer src="js/demos.js?v=6"></script>
+<script defer src="js/vision.js?v=6"></script>
+<script defer src="js/main.js?v=6"></script>
+<script defer src="js/voice.js?v=6"></script>
+<script defer src="js/avatar.js?v=6"></script>
 <script type="module">
   // skip WebGL entirely in the crash-recovery 'lite' mode (see the head script)
   // the 3D starts after the page is visible (main.js fires 'start-scene'); never in crash-recovery 'lite' mode
   if (!document.documentElement.classList.contains('lite')) {
     let started = false;
-    const go = () => { if (started) return; started = true; import('./js/scene.js?v=5'); };
+    const go = () => { if (started) return; started = true; import('./js/scene.js?v=6'); };
     addEventListener('start-scene', go);
     setTimeout(go, 4500);
   }

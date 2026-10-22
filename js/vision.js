@@ -13,12 +13,16 @@
   const rand = (a, b) => a + Math.random() * (b - a);
   const claudeOn = () => !!(window.Voice && window.Voice.claude);
 
+  // reuses two scratch canvases: Safari caps total canvas memory, so we never allocate per frame
+  const blurS = mk(1, 1), blurO = mk(1, 1);
   function blurred(src, f) {
-    const s = mk(Math.max(1, Math.round(src.width / f)), Math.max(1, Math.round(src.height / f)));
-    s.getContext('2d').drawImage(src, 0, 0, s.width, s.height);
-    const o = mk(src.width, src.height), x = o.getContext('2d');
-    x.imageSmoothingQuality = 'high'; x.drawImage(s, 0, 0, o.width, o.height);
-    return o;
+    const sw = Math.max(1, Math.round(src.width / f)), sh = Math.max(1, Math.round(src.height / f));
+    if (blurS.width !== sw || blurS.height !== sh) { blurS.width = sw; blurS.height = sh; } else blurS.getContext('2d').clearRect(0, 0, sw, sh);
+    blurS.getContext('2d').drawImage(src, 0, 0, sw, sh);
+    if (blurO.width !== src.width || blurO.height !== src.height) { blurO.width = src.width; blurO.height = src.height; }
+    const x = blurO.getContext('2d');
+    x.imageSmoothingQuality = 'high'; x.drawImage(blurS, 0, 0, blurO.width, blurO.height);
+    return blurO;
   }
   function blobToImage(blob) {
     return new Promise((res, rej) => { const u = URL.createObjectURL(blob); const im = new Image(); im.onload = () => { res(im); URL.revokeObjectURL(u); }; im.onerror = rej; im.src = u; });
@@ -324,7 +328,10 @@
   const STYLE_ID = { anime: 0, oil: 1, sketch: 2, cyber: 3, enhance: 4, mono: 5 };
   const RADIUS = { anime: 5, oil: 8 };
 
-  const GL = (() => {
+  // the stylisation WebGL context is created only when Transform is first used (saves GPU memory on phones)
+  let GLinst;
+  const getGL = () => (GLinst !== undefined ? GLinst : (GLinst = makeGL()));
+  const makeGL = () => {
     const c = mk(2, 2);
     const gl = c.getContext('webgl', { preserveDrawingBuffer: true, premultipliedAlpha: false, antialias: false });
     if (!gl) return null;
@@ -388,7 +395,7 @@
         return c;
       }
     };
-  })();
+  };
 
   let srcCanvas = null, trStyle = 'anime', comparePos = 50, trRun = 0, aiResult = null;
   const before = $('#trBefore'), after = $('#trAfter');
@@ -427,7 +434,7 @@
     const strength = +$('#trStrength').value / 100;
     const actx = after.getContext('2d');
     try {
-      if (!GL) throw 0;
+      const GL = getGL(); if (!GL) throw 0;
       const out = GL.run(srcCanvas, style, strength);
       if (run !== trRun) return;
       actx.drawImage(out, 0, 0, after.width, after.height);

@@ -5,12 +5,13 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 
 const canvas = document.getElementById('webgl');
 const ready = () => window.dispatchEvent(new Event('scene-ready'));
-const isMobile = matchMedia('(max-width: 820px), (pointer: coarse)').matches;
+// phones & tablets (iPhone, Samsung, iPad): same scene, but a memory-light build so iOS never kills the tab
+const isMobile = matchMedia('(max-width: 820px), (pointer: coarse), (hover: none)').matches;
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 let renderer;
 try {
-  renderer = new THREE.WebGLRenderer({ canvas, antialias: !isMobile, alpha: true, powerPreference: 'high-performance' });
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: !isMobile, alpha: true, powerPreference: isMobile ? 'default' : 'high-performance', stencil: false, depth: true });
 } catch (e) {
   document.documentElement.classList.add('no-webgl');
   ready();
@@ -19,7 +20,8 @@ try {
 
 // quality tiers: 2 = high (desktop), 1 = medium, 0 = low
 let tier = isMobile ? 1 : 2;
-const dprFor = t => Math.min(window.devicePixelRatio || 1, [1, 1.5, 2][t]);
+// iPhones report devicePixelRatio 3: a 3x full-screen buffer alone can exhaust Safari's budget
+const dprFor = t => Math.min(window.devicePixelRatio || 1, isMobile ? [0.9, 1.5, 1.5][t] : [1, 1.5, 2][t]);
 renderer.setPixelRatio(dprFor(tier));
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -29,8 +31,15 @@ const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
 camera.position.set(0, 0, 6.2);
 
-const pmrem = new THREE.PMREMGenerator(renderer);
-scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+if (!isMobile) {
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+  pmrem.dispose();
+} else {
+  // no environment cube maps on mobile: two cheap lights give the metal modules their shine
+  scene.add(new THREE.HemisphereLight(0xbfb4ff, 0x10081f, 1.6));
+  const key = new THREE.DirectionalLight(0x9fefff, 2.2); key.position.set(3, 4, 5); scene.add(key);
+}
 
 /* ---------- noise (Ashima simplex 3D) ---------- */
 const NOISE = `
@@ -99,7 +108,7 @@ const coreMat = new THREE.ShaderMaterial({
       gl_FragColor = vec4(col, uAlpha);
     }`
 });
-const detail = tier === 2 ? 72 : 36;
+const detail = tier === 2 ? 72 : 24;
 const core = new THREE.Mesh(new THREE.IcosahedronGeometry(1, detail), coreMat);
 
 const shell = new THREE.LineSegments(
@@ -128,8 +137,8 @@ function ring(count, radius, spread, color, size) {
   const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
   return new THREE.Points(geo, new THREE.PointsMaterial({ color, size, map: sprite, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, sizeAttenuation: true }));
 }
-const ringA = ring(tier === 2 ? 1400 : 700, 2.25, .55, 0x40e6ff, .045);
-const ringB = ring(tier === 2 ? 900 : 450, 2.85, .35, 0xff5fb0, .04);
+const ringA = ring(tier === 2 ? 1400 : 380, 2.25, .55, 0x40e6ff, .045);
+const ringB = ring(tier === 2 ? 900 : 240, 2.85, .35, 0xff5fb0, .04);
 ringA.rotation.x = 1.25; ringB.rotation.x = 1.9; ringB.rotation.z = .5;
 
 // orbiting tool modules (one per demo)
@@ -153,7 +162,7 @@ rig.add(core, shell, ringA, ringB, ...modules);
 scene.add(rig);
 
 // starfield
-const starCount = tier === 2 ? 2200 : 900;
+const starCount = tier === 2 ? 2200 : 450;
 const starPos = new Float32Array(starCount * 3);
 for (let i = 0; i < starCount; i++) {
   const r = 9 + Math.random() * 18, th = Math.random() * Math.PI * 2, ph = Math.acos(2 * Math.random() - 1);
@@ -269,12 +278,19 @@ function tick() {
   stars.rotation.y = t * .01 + pointer.x * .04;
   stars.rotation.x = pointer.y * .03;
 
-  canvas.style.opacity = cur.dim.toFixed(3);
-  renderer.render(scene, camera);
+  const op = cur.dim.toFixed(2);
+  if (op !== lastOp) { canvas.style.opacity = op; lastOp = op; }
+  // phones: while the scene is only a faint backdrop (demo sections), draw every 3rd frame
+  frameNo++;
+  if (!(isMobile && cur.dim < .35 && frameNo % 3)) renderer.render(scene, camera);
   adapt(dt);
   if (first) { first = false; ready(); }
-  requestAnimationFrame(tick);
+  if (!contextLost) requestAnimationFrame(tick);
 }
+let frameNo = 0, lastOp = '', contextLost = false;
+// iOS may drop the GL context under memory pressure: stop cleanly instead of crashing the page
+canvas.addEventListener('webglcontextlost', e => { e.preventDefault(); contextLost = true; canvas.style.opacity = '0'; });
+canvas.addEventListener('webglcontextrestored', () => { contextLost = false; requestAnimationFrame(tick); });
 
 bindSections();
 requestAnimationFrame(tick);

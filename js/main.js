@@ -109,6 +109,8 @@
       scrollTrigger: { trigger: wrap, start: 'top top', end: () => '+=' + dist(), pin: true, scrub: 1, invalidateOnRefresh: true, anticipatePin: 1, refreshPriority: 1 }
     });
     // cards lean into the motion
+    // 3D card lean only where there's a real GPU budget (laptops/desktops); phones get a flat, cheap slide
+    if (!fine) return;
     $$('.cap-card').forEach(card => {
       gsap.fromTo(card, { rotateY: document.documentElement.dir === 'rtl' ? 14 : -14, z: -80 }, {
         rotateY: 0, z: 0, ease: 'none',

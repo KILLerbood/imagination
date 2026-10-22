@@ -1,0 +1,762 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#04040a">
+<title>Imagination — AI tools that make it real</title>
+<meta name="description" content="Imagination is an AI platform for images, code, writing, customer service, payments and CRM. Try every tool live.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%238b6cff'/%3E%3Cstop offset='1' stop-color='%2340e6ff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='32' cy='32' r='26' fill='url(%23g)'/%3E%3Ccircle cx='32' cy='32' r='10' fill='%2304040a'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+} }
+</script>
+</head>
+<body class="is-loading">
+
+<!-- Preloader -->
+<div id="loader" aria-hidden="true">
+  <div class="loader-orb"><span></span><span></span><span></span></div>
+  <div class="loader-text"><span data-i18n="loader">Booting imagination</span> <b id="loaderPct">0</b>%</div>
+  <div class="loader-bar"><i id="loaderBar"></i></div>
+</div>
+
+<canvas id="webgl" aria-hidden="true"></canvas>
+<div class="grain" aria-hidden="true"></div>
+<div class="cursor" aria-hidden="true"><div class="cursor-ring"></div><div class="cursor-dot"></div><span class="cursor-label"></span></div>
+<div class="scroll-progress" aria-hidden="true"><i></i></div>
+
+<!-- Navigation -->
+<header class="nav" id="nav">
+  <a href="#top" class="logo mag" aria-label="Imagination home">
+    <span class="logo-mark"><i></i></span>
+    <span class="logo-word">Imagination</span>
+  </a>
+  <nav class="nav-links" aria-label="Main">
+    <a href="#capabilities" data-i18n="nav.cap">Capabilities</a>
+    <a href="#race" data-i18n="nav.demos">Live demos</a>
+    <a href="#roi" data-i18n="nav.roi">ROI</a>
+    <a href="#stories" data-i18n="nav.stories">Stories</a>
+  </nav>
+  <div class="nav-right">
+    <div class="lang" id="lang">
+      <button class="lang-btn" id="langBtn" aria-haspopup="listbox" aria-expanded="false">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.8 3 2.8 15 0 18M12 3c-2.8 3-2.8 15 0 18"/></svg>
+        <span id="langCur">EN</span>
+      </button>
+      <ul class="lang-menu" role="listbox">
+        <li><button data-lang="en"><b>EN</b> English</button></li>
+        <li><button data-lang="ar"><b>AR</b> العربية</button></li>
+        <li><button data-lang="de"><b>DE</b> Deutsch</button></li>
+        <li><button data-lang="ru"><b>RU</b> Русский</button></li>
+      </ul>
+    </div>
+    <a href="#contact" class="btn btn-glow btn-sm mag nav-cta"><span data-i18n="nav.cta">Start free</span></a>
+    <button class="burger" id="burger" aria-label="Menu"><span></span><span></span></button>
+  </div>
+</header>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#capabilities" data-i18n="nav.cap">Capabilities</a>
+  <a href="#race" data-i18n="nav.demos">Live demos</a>
+  <a href="#roi" data-i18n="nav.roi">ROI</a>
+  <a href="#stories" data-i18n="nav.stories">Stories</a>
+  <a href="#contact" data-i18n="nav.cta">Start free</a>
+</div>
+
+<!-- Demo quick-dock (desktop) -->
+<aside class="dock" id="dock" aria-label="Demos">
+  <a href="#race" data-tip="d1.short"><span>01</span></a>
+  <a href="#vision" data-tip="d2.short"><span>02</span></a>
+  <a href="#writer" data-tip="d3.short"><span>03</span></a>
+  <a href="#code" data-tip="d4.short"><span>04</span></a>
+  <a href="#agent" data-tip="d5.short"><span>05</span></a>
+  <a href="#payments" data-tip="d6.short"><span>06</span></a>
+  <a href="#crm" data-tip="d7.short"><span>07</span></a>
+  <a href="#avatar" data-tip="d8.short"><span>08</span></a>
+</aside>
+
+<!-- Nova voice assistant -->
+<button class="nova-fab" id="novaFab" aria-label="Talk to Nova">
+  <span class="fab-orb"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></span>
+  <span class="fab-label" data-v="open">Talk to Nova</span>
+</button>
+<div class="nova-panel" id="novaPanel" role="dialog" aria-label="Nova voice assistant">
+  <div class="np-head">
+    <div class="np-id"><b>Nova <span class="np-badge" id="npBadge" hidden></span></b><small id="npState"></small></div>
+    <select id="npLang" class="nova-lang" aria-label="Voice language"><option value="en">English</option><option value="ar">عربي مصري</option><option value="arm">عربي فصحى</option><option value="de">Deutsch</option><option value="ru">Русский</option></select>
+    <button class="np-x" id="npClose" aria-label="Close">×</button>
+  </div>
+  <div class="np-stage">
+    <canvas id="npOrb" width="440" height="440"></canvas>
+    <button class="np-mic" id="npMic" aria-label="Microphone"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+    <div class="np-live" id="npLive" dir="auto"></div>
+    <button class="np-stop chip" id="npTourStop" hidden><span data-v="stop">Stop</span></button>
+  </div>
+  <div class="np-log" id="npLog" dir="auto"></div>
+  <div class="np-connect" id="npConnect" hidden>
+    <b id="ncTitle"></b><p id="ncBody"></p>
+    <form id="ncForm" dir="ltr"><input id="ncKey" type="password" autocomplete="off" placeholder="sk-ant-…"><button class="chip is-on" id="ncSave" type="submit"></button></form>
+    <a id="ncGet" href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener"></a> <small id="ncMsg"></small>
+  </div>
+  <div class="np-sugg chips" id="npSugg">
+    <button class="chip" data-vs="s1"><span data-v="s1"></span></button>
+    <button class="chip" data-vs="s2"><span data-v="s2"></span></button>
+    <button class="chip" data-vs="s3"><span data-v="s3"></span></button>
+    <button class="chip" data-vs="s4"><span data-v="s4"></span></button>
+  </div>
+  <form class="np-form" id="npForm"><input id="npText" autocomplete="off" dir="auto"><button class="send" type="submit" aria-label="Send"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M3 20l18-8L3 4v6l12 2-12 2z"/></svg></button></form>
+  <p class="np-note" id="npNote"></p>
+</div>
+
+<div id="smooth-wrapper">
+<div id="smooth-content">
+<main>
+
+<!-- HERO -->
+<section class="hero" id="top" data-scene="hero">
+  <div class="hero-inner">
+    <p class="eyebrow rv"><span class="pulse-dot"></span><span data-i18n="hero.eyebrow">The AI platform for people who build</span></p>
+    <h1 class="hero-title split" data-i18n-html="hero.title">Imagine it.<br><em class="grad">Watch it become real.</em></h1>
+    <p class="hero-sub rv" data-i18n="hero.sub"></p>
+    <div class="hero-ctas rv">
+      <a href="#race" class="btn btn-glow mag"><span data-i18n="hero.cta1">Try the live demos</span>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      <button class="btn btn-ghost mag btn-voice" data-nova-open><span class="mic-dot"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></span><span data-v="talk">Talk to Nova</span></button>
+    </div>
+    <div class="hero-stats rv">
+      <div><b data-count="4.2" data-dec="1" data-suffix="M">4.2M</b><span data-i18n="hero.s1"></span></div>
+      <div><b data-count="0.8" data-dec="1" data-suffix="s">0.8s</b><span data-i18n="hero.s2"></span></div>
+      <div><b data-count="99.99" data-dec="2" data-suffix="%">99.99%</b><span data-i18n="hero.s3"></span></div>
+    </div>
+  </div>
+  <button class="core-hint" id="coreHint"><span class="ring"></span><span data-i18n="hero.hint">Click the core to wake it</span></button>
+  <div class="scroll-cue"><span data-i18n="hero.scroll">Scroll to explore</span><i></i></div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee" aria-hidden="true">
+  <div class="marquee-track"><span data-i18n="marquee"></span><span data-i18n="marquee"></span><span data-i18n="marquee"></span><span data-i18n="marquee"></span></div>
+</div>
+
+<!-- CAPABILITIES (horizontal) -->
+<section class="caps horiz-gallery-wrapper" id="capabilities" data-scene="caps">
+  <div class="horiz-gallery-strip">
+    <div class="cap-intro">
+      <p class="eyebrow" data-i18n="caps.eyebrow"></p>
+      <h2 class="h2 split" data-i18n-html="caps.title"></h2>
+      <p class="lead" data-i18n="caps.sub"></p>
+      <div class="drag-hint"><i></i><span data-i18n="caps.hint"></span></div>
+    </div>
+    <a class="cap-card" href="#race" style="--c1:#ffb547;--c2:#ff5f8f">
+      <div class="cap-num">01</div>
+      <div class="cap-icon"><svg viewBox="0 0 48 48"><path d="M8 34l10-12 8 8 14-18"/><path d="M30 12h10v10"/></svg></div>
+      <span class="cap-tag" data-i18n="cap1.tag"></span>
+      <h3 data-i18n="cap1.title"></h3>
+      <p data-i18n="cap1.desc"></p>
+      <span class="cap-open"><span data-i18n="cap.open"></span> →</span>
+      <div class="cap-glow"></div>
+    </a>
+    <a class="cap-card" href="#vision" style="--c1:#8b6cff;--c2:#ff5fb0">
+      <div class="cap-num">02</div>
+      <div class="cap-icon"><svg viewBox="0 0 48 48"><rect x="7" y="9" width="34" height="30" rx="5"/><circle cx="18" cy="20" r="4"/><path d="M7 33l11-9 9 7 6-5 8 7"/></svg></div>
+      <span class="cap-tag" data-i18n="cap2.tag"></span>
+      <h3 data-i18n="cap2.title"></h3>
+      <p data-i18n="cap2.desc"></p>
+      <span class="cap-open"><span data-i18n="cap.open"></span> →</span>
+      <div class="cap-glow"></div>
+    </a>
+    <a class="cap-card" href="#writer" style="--c1:#40e6ff;--c2:#8b6cff">
+      <div class="cap-num">03</div>
+      <div class="cap-icon"><svg viewBox="0 0 48 48"><path d="M10 38l4-12L32 8l8 8-18 18z"/><path d="M28 12l8 8"/><path d="M10 38h28"/></svg></div>
+      <span class="cap-tag" data-i18n="cap3.tag"></span>
+      <h3 data-i18n="cap3.title"></h3>
+      <p data-i18n="cap3.desc"></p>
+      <span class="cap-open"><span data-i18n="cap.open"></span> →</span>
+      <div class="cap-glow"></div>
+    </a>
+    <a class="cap-card" href="#code" style="--c1:#7dff9b;--c2:#40e6ff">
+      <div class="cap-num">04</div>
+      <div class="cap-icon"><svg viewBox="0 0 48 48"><path d="M17 14L7 24l10 10M31 14l10 10-10 10M27 9l-6 30"/></svg></div>
+      <span class="cap-tag" data-i18n="cap4.tag"></span>
+      <h3 data-i18n="cap4.title"></h3>
+      <p data-i18n="cap4.desc"></p>
+      <span class="cap-open"><span data-i18n="cap.open"></span> →</span>
+      <div class="cap-glow"></div>
+    </a>
+    <a class="cap-card" href="#agent" style="--c1:#ff5fb0;--c2:#ffb547">
+      <div class="cap-num">05</div>
+      <div class="cap-icon"><svg viewBox="0 0 48 48"><path d="M8 12h32v20H22l-8 7v-7H8z"/><circle cx="17" cy="22" r="1.5"/><circle cx="24" cy="22" r="1.5"/><circle cx="31" cy="22" r="1.5"/></svg></div>
+      <span class="cap-tag" data-i18n="cap5.tag"></span>
+      <h3 data-i18n="cap5.title"></h3>
+      <p data-i18n="cap5.desc"></p>
+      <span class="cap-open"><span data-i18n="cap.open"></span> →</span>
+      <div class="cap-glow"></div>
+    </a>
+    <a class="cap-card" href="#payments" style="--c1:#40e6ff;--c2:#7dff9b">
+      <div class="cap-num">06</div>
+      <div class="cap-icon"><svg viewBox="0 0 48 48"><rect x="6" y="11" width="36" height="26" rx="4"/><path d="M6 19h36M12 30h8"/></svg></div>
+      <span class="cap-tag" data-i18n="cap6.tag"></span>
+      <h3 data-i18n="cap6.title"></h3>
+      <p data-i18n="cap6.desc"></p>
+      <span class="cap-open"><span data-i18n="cap.open"></span> →</span>
+      <div class="cap-glow"></div>
+    </a>
+    <a class="cap-card" href="#crm" style="--c1:#8b6cff;--c2:#40e6ff">
+      <div class="cap-num">07</div>
+      <div class="cap-icon"><svg viewBox="0 0 48 48"><circle cx="17" cy="17" r="6"/><path d="M6 38c1-7 6-11 11-11s10 4 11 11"/><path d="M30 14h12M30 21h12M32 28h10"/></svg></div>
+      <span class="cap-tag" data-i18n="cap7.tag"></span>
+      <h3 data-i18n="cap7.title"></h3>
+      <p data-i18n="cap7.desc"></p>
+      <span class="cap-open"><span data-i18n="cap.open"></span> →</span>
+      <div class="cap-glow"></div>
+    </a>
+  </div>
+</section>
+
+<!-- DEMO 01: RACE THE AI -->
+<section class="demo" id="race" data-scene="demo">
+  <div class="demo-head">
+    <p class="eyebrow"><span class="demo-no">01</span><span data-i18n="d1.eyebrow"></span></p>
+    <h2 class="h2 split" data-i18n-html="d1.title"></h2>
+    <p class="lead rv" data-i18n="d1.sub"></p>
+  </div>
+  <div class="race glass rv">
+    <div class="race-top">
+      <div class="race-modes" role="tablist">
+        <button class="chip is-on" data-mode="linear" data-i18n="d1.m1"></button>
+        <button class="chip" data-mode="quad" data-i18n="d1.m2"></button>
+        <button class="chip" data-mode="arith" data-i18n="d1.m3"></button>
+        <button class="chip" data-mode="custom" data-i18n="d1.m4"></button>
+      </div>
+      <button class="icon-btn" id="raceNew" aria-label="New problem">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg>
+        <span data-i18n="d1.new"></span>
+      </button>
+    </div>
+    <div class="race-problem">
+      <div class="race-label" data-i18n="d1.solve"></div>
+      <div class="equation" id="raceEq" dir="ltr"></div>
+      <form class="custom-eq" id="customEq" dir="ltr">
+        <input id="customInput" autocomplete="off" spellcheck="false" placeholder="3x^2 - 12x + 9 = 0">
+        <button class="btn btn-glow btn-sm" type="submit"><span data-i18n="d1.use"></span></button>
+      </form>
+    </div>
+    <div class="race-arena">
+      <div class="lane lane-you">
+        <div class="lane-head"><span class="avatar you">YOU</span><b data-i18n="d1.you"></b><span class="lane-time" id="youTime">0.00s</span></div>
+        <form id="youForm" class="you-form" dir="ltr">
+          <input id="youInput" inputmode="text" autocomplete="off" placeholder="x = ?">
+          <button class="btn btn-ghost btn-sm" type="submit"><span data-i18n="d1.check"></span></button>
+        </form>
+        <div class="you-msg" id="youMsg" data-i18n="d1.youHint"></div>
+        <div class="scratch" aria-hidden="true"><canvas id="scratch"></canvas><span data-i18n="d1.scratch"></span><button type="button" class="scratch-clear" id="scratchClear">×</button></div>
+      </div>
+      <div class="lane lane-ai">
+        <div class="lane-head"><span class="avatar ai">AI</span><b>Imagination Math</b><span class="lane-time" id="aiTime">—</span></div>
+        <button class="btn btn-glow ai-go mag" id="aiGo"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M13 2L4 14h6l-1 8 9-12h-6z"/></svg><span data-i18n="d1.aiGo"></span></button>
+        <ol class="steps" id="aiSteps" dir="ltr"></ol>
+      </div>
+    </div>
+    <div class="race-result" id="raceResult"></div>
+  </div>
+</section>
+
+<!-- DEMO 02: VISION STUDIO -->
+<section class="demo" id="vision" data-scene="demo">
+  <div class="demo-head">
+    <p class="eyebrow"><span class="demo-no">02</span><span data-i18n="d2.eyebrow"></span></p>
+    <h2 class="h2 split" data-i18n-html="d2.title"></h2>
+    <p class="lead rv" data-i18n="d2.sub"></p>
+  </div>
+  <div class="vision glass rv">
+    <div class="tabs" role="tablist">
+      <button class="tab is-on" data-vtab="gen" data-i18n="d2.tabGen"></button>
+      <button class="tab" data-vtab="tr" data-i18n="d2.tabTr"></button>
+      <i class="tab-ink"></i>
+    </div>
+    <!-- Generate -->
+    <div class="vpanel is-on" data-vpanel="gen">
+      <div class="vgrid">
+        <div class="vside">
+          <label class="field-label" for="genPrompt" data-i18n="d2.prompt"></label>
+          <textarea id="genPrompt" rows="3" dir="auto" data-i18n-ph="d2.ph"></textarea>
+          <div class="chips" id="genPresets">
+            <button class="chip" data-gp="d2.g1"></button>
+            <button class="chip" data-gp="d2.g2"></button>
+            <button class="chip" data-gp="d2.g3"></button>
+            <button class="chip" data-gp="d2.g4"></button>
+          </div>
+          <span class="field-label" data-i18n="d2.style"></span>
+          <div class="style-pills" id="genStyle">
+            <button class="is-on" data-gs="photo" data-i18n="gs.photo"></button>
+            <button data-gs="cine" data-i18n="gs.cine"></button>
+            <button data-gs="anime" data-i18n="gs.anime"></button>
+            <button data-gs="3d" data-i18n="gs.3d"></button>
+            <button data-gs="oil" data-i18n="gs.oil"></button>
+            <button data-gs="neon" data-i18n="gs.neon"></button>
+          </div>
+          <span class="field-label" data-i18n="d2.size"></span>
+          <div class="seg" id="genSize">
+            <button class="is-on" data-gz="wide">16:10</button>
+            <button data-gz="square">1:1</button>
+            <button data-gz="tall">4:5</button>
+          </div>
+          <button class="btn btn-glow wide mag" id="genGo"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2l2.2 6.8L21 11l-6.8 2.2L12 20l-2.2-6.8L3 11l6.8-2.2z"/></svg><span data-i18n="d2.generate"></span></button>
+          <div class="gen-meta" id="genMeta"></div>
+          <div class="img-free" id="imgFree" hidden>
+            <b data-i18n="d2.gemTitle"></b>
+            <p data-i18n="d2.gemBody"></p>
+            <form id="gemKeyForm" dir="ltr"><input id="gemKey" type="password" autocomplete="off" placeholder="AIza…"><button class="chip is-on" type="submit" data-i18n="d2.keySave"></button></form>
+            <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" data-i18n="d2.gemGet"></a> <small id="gemMsg"></small>
+            <div class="img-free-alt" id="polBox">
+              <p data-i18n="d2.free"></p>
+              <form id="imgKeyForm" dir="ltr"><input id="imgKey" type="password" autocomplete="off" placeholder="pollen key…"><button class="chip" type="submit" data-i18n="d2.keySave"></button></form>
+              <a href="https://enter.pollinations.ai" target="_blank" rel="noopener" data-i18n="d2.keyGet"></a>
+            </div>
+          </div>
+        </div>
+        <div class="vstage">
+          <div class="gen-frame" id="genFrame">
+            <canvas id="genCanvas" width="1024" height="640"></canvas>
+            <div class="gen-overlay" id="genOverlay"><span data-i18n="d2.idle"></span></div>
+            <div class="gen-step" id="genStep" dir="auto"></div>
+            <a class="gen-dl" id="genDl" download="imagination.jpg" hidden aria-label="Download"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4v12M6 10l6 6 6-6M4 20h16"/></svg></a>
+          </div>
+          <div class="gen-progress"><i id="genBar"></i></div>
+          <div class="gen-prompt" id="genUsed" dir="ltr"></div>
+          <div class="gen-gallery" id="genGallery"></div>
+        </div>
+      </div>
+    </div>
+    <!-- Transform -->
+    <div class="vpanel" data-vpanel="tr">
+      <div class="vgrid">
+        <div class="vside">
+          <span class="field-label" data-i18n="d2.pick"></span>
+          <div class="style-grid" id="trStyles">
+            <button data-style="anime" class="is-on"><i style="--g:linear-gradient(135deg,#7cc8ff,#ffb3d9)"></i><span data-i18n="s.anime"></span></button>
+            <button data-style="oil"><i style="--g:linear-gradient(135deg,#e2a54b,#3b6fb5)"></i><span data-i18n="s.oil"></span></button>
+            <button data-style="sketch"><i style="--g:linear-gradient(135deg,#eee,#888)"></i><span data-i18n="s.sketch"></span></button>
+            <button data-style="cyber"><i style="--g:linear-gradient(135deg,#ff3fb4,#3ee8ff)"></i><span data-i18n="s.cyber"></span></button>
+            <button data-style="enhance"><i style="--g:linear-gradient(135deg,#ffd27a,#ff8a5c)"></i><span data-i18n="s.enhance"></span></button>
+            <button data-style="mono"><i style="--g:linear-gradient(135deg,#222,#bbb)"></i><span data-i18n="s.mono"></span></button>
+          </div>
+          <label class="range-row"><span data-i18n="d2.strength"></span><input type="range" id="trStrength" min="0" max="100" value="100"></label>
+          <label class="upload btn btn-ghost wide">
+            <input type="file" id="trUpload" accept="image/*" hidden>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 16V4M6 10l6-6 6 6M4 20h16"/></svg>
+            <span data-i18n="d2.upload"></span>
+          </label>
+          <button class="btn btn-glow wide" id="trRemake"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2l2.2 6.8L21 11l-6.8 2.2L12 20l-2.2-6.8L3 11l6.8-2.2z"/></svg><span data-i18n="d2.remake"></span></button>
+          <p class="fine" id="trRemakeNote" data-i18n="d2.remakeNote"></p>
+          <p class="fine" data-i18n="d2.privacy"></p>
+        </div>
+        <div class="vstage">
+          <div class="compare" id="compare" dir="ltr">
+            <canvas id="trBefore"></canvas>
+            <canvas id="trAfter"></canvas>
+            <div class="compare-line" id="compareLine"><span class="compare-knob"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l-6 6 6 6M15 6l6 6-6 6"/></svg></span></div>
+            <span class="ctag ctag-a" data-i18n="d2.after"></span>
+            <span class="ctag ctag-b" data-i18n="d2.before"></span>
+            <div class="tr-status" id="trStatus"><span class="spin"></span><span id="trStatusText" data-i18n="d2.processing"></span></div>
+          </div>
+          <p class="fine center" data-i18n="d2.drag"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DEMO 03: WRITER -->
+<section class="demo" id="writer" data-scene="demo">
+  <div class="demo-head">
+    <p class="eyebrow"><span class="demo-no">03</span><span data-i18n="d3.eyebrow"></span></p>
+    <h2 class="h2 split" data-i18n-html="d3.title"></h2>
+    <p class="lead rv" data-i18n="d3.sub"></p>
+  </div>
+  <div class="writer glass rv">
+    <div class="w-controls">
+      <label class="field-label" for="wName" data-i18n="d3.product"></label>
+      <input id="wName" class="input" value="Lumi Smart Lamp">
+      <span class="field-label" data-i18n="d3.type"></span>
+      <div class="w-types" id="wTypes">
+        <button class="w-type is-on" data-wt="desc"><b data-i18n="d3.t1"></b><small data-i18n="d3.t1s"></small></button>
+        <button class="w-type" data-wt="reply"><b data-i18n="d3.t2"></b><small data-i18n="d3.t2s"></small></button>
+        <button class="w-type" data-wt="social"><b data-i18n="d3.t3"></b><small data-i18n="d3.t3s"></small></button>
+      </div>
+      <span class="field-label" data-i18n="d3.tone"></span>
+      <div class="seg" id="wTone">
+        <button class="is-on" data-tone="0" data-i18n="d3.tone1"></button>
+        <button data-tone="1" data-i18n="d3.tone2"></button>
+        <button data-tone="2" data-i18n="d3.tone3"></button>
+      </div>
+      <button class="btn btn-glow wide mag" id="wGo"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20l4-1L19 8l-3-3L5 16z"/></svg><span data-i18n="d3.write"></span></button>
+    </div>
+    <div class="w-doc">
+      <div class="doc-bar"><i></i><i></i><i></i><span data-i18n="d3.draft"></span><span class="doc-stats" id="wStats"></span></div>
+      <div class="doc-body" id="wOut"></div>
+      <div class="doc-actions">
+        <button class="chip" id="wCopy"><span data-i18n="d3.copy"></span></button>
+        <button class="chip" id="wAgain"><span data-i18n="d3.again"></span></button>
+        <div class="readability"><span data-i18n="d3.score"></span><b id="wScore">—</b></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DEMO 04: CODE FORGE -->
+<section class="demo" id="code" data-scene="demo">
+  <div class="demo-head">
+    <p class="eyebrow"><span class="demo-no">04</span><span data-i18n="d4.eyebrow"></span></p>
+    <h2 class="h2 split" data-i18n-html="d4.title"></h2>
+    <p class="lead rv" data-i18n="d4.sub"></p>
+  </div>
+  <div class="forge glass rv">
+    <div class="forge-prompt">
+      <span class="prompt-sign">›</span>
+      <span class="prompt-text" id="cPrompt"></span><span class="caret"></span>
+      <div class="chips forge-chips">
+        <button class="chip" data-snip="0" data-i18n="d4.p1"></button>
+        <button class="chip" data-snip="1" data-i18n="d4.p2"></button>
+        <button class="chip" data-snip="2" data-i18n="d4.p3"></button>
+      </div>
+    </div>
+    <div class="forge-grid">
+      <div class="editor" dir="ltr">
+        <div class="editor-bar"><i></i><i></i><i></i><span>index.html</span><span class="editor-stat" id="cStat"></span></div>
+        <pre class="code" id="cOut"><code></code></pre>
+      </div>
+      <div class="preview">
+        <div class="editor-bar"><span class="live-dot"></span><span data-i18n="d4.preview"></span><span class="editor-stat" id="cState"></span></div>
+        <iframe id="cFrame" title="Live preview" sandbox="allow-scripts"></iframe>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DEMO 05: AGENT / CUSTOMER SERVICE -->
+<section class="demo" id="agent" data-scene="demo">
+  <div class="demo-split">
+    <div class="demo-head">
+      <p class="eyebrow"><span class="demo-no">05</span><span data-i18n="d5.eyebrow"></span></p>
+      <h2 class="h2 split" data-i18n-html="d5.title"></h2>
+      <p class="lead rv" data-i18n="d5.sub"></p>
+      <div class="svc-grid rv">
+        <div class="svc"><b>24/7</b><span data-i18n="sv1"></span></div>
+        <div class="svc"><b>40+</b><span data-i18n="sv2"></span></div>
+        <div class="svc"><b>0.4s</b><span data-i18n="sv3"></span></div>
+        <div class="svc"><b>87%</b><span data-i18n="sv4"></span></div>
+      </div>
+    </div>
+    <div class="chat glass rv">
+      <div class="chat-head">
+        <div class="nova-orb"><i></i></div>
+        <div><b>Nova</b><small><span class="live-dot"></span><span data-i18n="d5.online"></span></small></div>
+        <button class="icon-btn sm" id="chatReset" aria-label="Reset"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg></button>
+      </div>
+      <div class="chat-body" id="chatBody"></div>
+      <div class="chips chat-quick" id="chatQuick">
+        <button class="chip" data-q="1" data-i18n="q1"></button>
+        <button class="chip" data-q="2" data-i18n="q2"></button>
+        <button class="chip" data-q="3" data-i18n="q3"></button>
+      </div>
+      <form class="chat-input" id="chatForm">
+        <input id="chatText" autocomplete="off" data-i18n-ph="d5.ph">
+        <button class="send" type="submit" aria-label="Send"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M3 20l18-8L3 4v6l12 2-12 2z"/></svg></button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- DEMO 06: PAYMENTS -->
+<section class="demo" id="payments" data-scene="demo">
+  <div class="demo-head">
+    <p class="eyebrow"><span class="demo-no">06</span><span data-i18n="d6.eyebrow"></span></p>
+    <h2 class="h2 split" data-i18n-html="d6.title"></h2>
+    <p class="lead rv" data-i18n="d6.sub"></p>
+  </div>
+  <div class="pay glass rv">
+    <div class="pay-left">
+      <div class="card-scene" id="cardScene">
+        <div class="card3d" id="card3d">
+          <div class="card-face card-front">
+            <div class="card-shine"></div>
+            <div class="card-top"><span class="card-brand">Imagination<b>PAY</b></span><span class="chip-ic"></span></div>
+            <div class="card-num" id="cardNum" dir="ltr">4242 4242 4242 4242</div>
+            <div class="card-bot" dir="ltr"><div><small data-i18n="d6.holder"></small><span id="cardName">ALEX MORGAN</span></div><div><small data-i18n="d6.exp"></small><span id="cardExp">08/29</span></div><div class="card-logo"><i></i><i></i></div></div>
+          </div>
+          <div class="card-face card-back">
+            <div class="card-stripe"></div>
+            <div class="card-cvc" dir="ltr"><small>CVC</small><span id="cardCvc">424</span></div>
+          </div>
+        </div>
+      </div>
+      <form class="pay-form" id="payForm" dir="ltr">
+        <label><span data-i18n="d6.number"></span><input id="pNum" inputmode="numeric" value="4242 4242 4242 4242" maxlength="19"></label>
+        <label><span data-i18n="d6.holder"></span><input id="pName" value="Alex Morgan"></label>
+        <div class="pf-row">
+          <label><span data-i18n="d6.exp"></span><input id="pExp" value="08/29" maxlength="5"></label>
+          <label><span>CVC</span><input id="pCvc" value="424" maxlength="3" inputmode="numeric"></label>
+        </div>
+        <div class="order-line"><span data-i18n="d6.order"></span><b id="payAmount"></b></div>
+        <button class="btn btn-glow wide mag" id="payBtn" type="submit"><span id="payLabel"></span></button>
+        <p class="fine" data-i18n="d6.note"></p>
+      </form>
+    </div>
+    <div class="pay-right">
+      <div class="risk" id="risk">
+        <div class="risk-head"><b data-i18n="d6.risk"></b><span class="pill" id="riskPill">—</span></div>
+        <div class="gauge">
+          <svg viewBox="0 0 200 115"><defs><linearGradient id="gg" x1="0" x2="1"><stop offset="0" stop-color="#7dff9b"/><stop offset=".55" stop-color="#ffb547"/><stop offset="1" stop-color="#ff4f6d"/></linearGradient></defs>
+            <path d="M15 105 A85 85 0 0 1 185 105" class="g-track"/>
+            <path d="M15 105 A85 85 0 0 1 185 105" class="g-fill" id="gFill" stroke="url(#gg)"/>
+          </svg>
+          <div class="g-val"><b id="gVal">0</b><small>/100</small></div>
+        </div>
+        <ul class="checks" id="checks">
+          <li data-i18n="d6.c1"></li><li data-i18n="d6.c2"></li><li data-i18n="d6.c3"></li><li data-i18n="d6.c4"></li>
+        </ul>
+      </div>
+      <div class="feed">
+        <div class="feed-stats">
+          <div><small data-i18n="d6.volume"></small><b id="fVol">$0</b></div>
+          <div><small data-i18n="d6.blocked"></small><b id="fBlk">0</b></div>
+        </div>
+        <div class="feed-title"><span class="live-dot"></span><span data-i18n="d6.feed"></span></div>
+        <ul class="feed-list" id="feedList"></ul>
+      </div>
+      <div class="pay-success" id="paySuccess">
+        <canvas id="confetti"></canvas>
+        <svg viewBox="0 0 80 80" class="tick"><circle cx="40" cy="40" r="34"/><path d="M25 41l10 10 20-22"/></svg>
+        <h3 data-i18n="d6.success"></h3>
+        <p data-i18n="d6.successSub"></p>
+        <div class="tx" id="txId" dir="ltr"></div>
+        <button class="btn btn-ghost btn-sm" id="payAgain"><span data-i18n="d6.again"></span></button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DEMO 07: CRM -->
+<section class="demo" id="crm" data-scene="demo">
+  <div class="demo-head">
+    <p class="eyebrow"><span class="demo-no">07</span><span data-i18n="d7.eyebrow"></span></p>
+    <h2 class="h2 split" data-i18n-html="d7.title"></h2>
+    <p class="lead rv" data-i18n="d7.sub"></p>
+  </div>
+  <div class="crm glass rv">
+    <div class="kpis">
+      <div class="kpi"><small data-i18n="k1"></small><b id="k1">—</b><span class="spark s1"></span></div>
+      <div class="kpi"><small data-i18n="k2"></small><b id="k2">—</b><span class="spark s2"></span></div>
+      <div class="kpi"><small data-i18n="k3"></small><b id="k3">—</b><span class="spark s3"></span></div>
+      <div class="kpi"><small data-i18n="k4"></small><b id="k4">—</b><span class="spark s4"></span></div>
+    </div>
+    <div class="crm-grid">
+      <div class="kanban" id="kanban"></div>
+      <div class="crm-side">
+        <div class="chart-box">
+          <div class="box-head"><b data-i18n="d7.chart"></b><span class="legend"><i class="l1"></i><span data-i18n="d7.actual"></span><i class="l2"></i><span data-i18n="d7.forecast"></span></span></div>
+          <svg id="chart" viewBox="0 0 420 200" preserveAspectRatio="none"></svg>
+          <div class="chart-months" id="chartMonths" dir="ltr"></div>
+        </div>
+        <div class="insight">
+          <div class="box-head"><b><span class="spark-ic">✦</span> <span data-i18n="d7.insight"></span></b></div>
+          <p id="insightText"></p>
+        </div>
+      </div>
+    </div>
+    <p class="fine center" data-i18n="d7.hint"></p>
+  </div>
+</section>
+
+<!-- DEMO 08: AI HUMAN AVATAR -->
+<section class="demo" id="avatar" data-scene="demo">
+  <div class="avatar-grid">
+    <div class="call glass rv" id="call">
+      <div class="call-top">
+        <span class="rec"><i></i><span data-i18n="d8.live"></span></span>
+        <span class="call-name"><b>Nova</b> · <span data-i18n="d8.role"></span></span>
+        <span class="call-time" id="callTime" dir="ltr">00:00</span>
+      </div>
+      <button class="avatar-stage" id="avatarStage" aria-label="Talk to Nova">
+        <svg viewBox="0 0 400 480" class="avatar-svg" id="avatarSvg" aria-hidden="true">
+          <defs>
+            <radialGradient id="avBg" cx="50%" cy="38%" r="70%"><stop offset="0" stop-color="#3b2a8f"/><stop offset=".6" stop-color="#160f3d"/><stop offset="1" stop-color="#07061a"/></radialGradient>
+            <linearGradient id="avSkin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f3c9a8"/><stop offset="1" stop-color="#dea07c"/></linearGradient>
+            <radialGradient id="avCheek" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ff8f8f" stop-opacity=".35"/><stop offset="1" stop-color="#ff8f8f" stop-opacity="0"/></radialGradient>
+            <linearGradient id="avHair" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a2219"/><stop offset="1" stop-color="#160c08"/></linearGradient>
+            <linearGradient id="avBlazer" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7a5cff"/><stop offset="1" stop-color="#2a1a78"/></linearGradient>
+            <radialGradient id="avIris" cx="40%" cy="40%" r="60%"><stop offset="0" stop-color="#8a5a34"/><stop offset="1" stop-color="#2c170a"/></radialGradient>
+            <clipPath id="avEyeClip"><ellipse cx="0" cy="0" rx="15" ry="9.5"/></clipPath>
+          </defs>
+          <rect width="400" height="480" fill="url(#avBg)"/>
+          <g class="av-rings"><circle cx="200" cy="250" r="170" fill="none" stroke="#8b6cff" stroke-opacity=".18"/><circle cx="200" cy="250" r="200" fill="none" stroke="#40e6ff" stroke-opacity=".1"/></g>
+          <g id="avBody">
+            <path d="M108 250 C96 140 160 118 200 118 C248 118 306 140 294 250 C304 330 292 372 272 396 L128 396 C106 372 98 330 108 250Z" fill="url(#avHair)"/>
+            <path d="M56 480 C66 410 118 384 166 376 L234 376 C282 384 334 410 344 480Z" fill="url(#avBlazer)"/>
+            <path d="M168 376 L200 438 L232 376Z" fill="#f1efff"/>
+            <path d="M166 376 L200 440 L186 480 L140 480 C150 440 156 404 166 376Z" fill="#5a40d8"/>
+            <path d="M234 376 L200 440 L214 480 L260 480 C250 440 244 404 234 376Z" fill="#5a40d8"/>
+            <path d="M178 326 L178 380 Q200 394 222 380 L222 326Z" fill="#d79a76"/>
+            <g id="avHead">
+              <ellipse cx="121" cy="256" rx="11" ry="19" fill="#e2a682"/>
+              <ellipse cx="279" cy="256" rx="11" ry="19" fill="#e2a682"/>
+              <path d="M122 232 C122 162 160 140 200 140 C240 140 278 162 278 232 C278 302 246 346 200 346 C154 346 122 302 122 232Z" fill="url(#avSkin)"/>
+              <ellipse cx="156" cy="290" rx="20" ry="12" fill="url(#avCheek)"/>
+              <ellipse cx="244" cy="290" rx="20" ry="12" fill="url(#avCheek)"/>
+              <g id="avEyeL" transform="translate(167 248)">
+                <g class="av-eye-in">
+                  <ellipse rx="15" ry="9.5" fill="#fff"/>
+                  <g clip-path="url(#avEyeClip)"><g class="av-iris"><circle r="7.5" fill="url(#avIris)"/><circle r="3.4" fill="#0b0604"/><circle cx="2.6" cy="-2.6" r="1.9" fill="#fff"/></g></g>
+                  <path d="M-16 -1 Q0 -14 16 -1" stroke="#1d110b" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+                </g>
+              </g>
+              <g id="avEyeR" transform="translate(233 248)">
+                <g class="av-eye-in">
+                  <ellipse rx="15" ry="9.5" fill="#fff"/>
+                  <g clip-path="url(#avEyeClip)"><g class="av-iris"><circle r="7.5" fill="url(#avIris)"/><circle r="3.4" fill="#0b0604"/><circle cx="2.6" cy="-2.6" r="1.9" fill="#fff"/></g></g>
+                  <path d="M-16 -1 Q0 -14 16 -1" stroke="#1d110b" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+                </g>
+              </g>
+              <path id="avBrowL" d="M148 227 Q167 216 186 224" stroke="#2a170f" stroke-width="5" stroke-linecap="round" fill="none"/>
+              <path id="avBrowR" d="M214 224 Q233 216 252 227" stroke="#2a170f" stroke-width="5" stroke-linecap="round" fill="none"/>
+              <path d="M200 254 Q196 278 190 287 Q200 294 210 287" stroke="#bf8261" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+              <g id="avMouth">
+                <ellipse id="avInner" cx="200" cy="317" rx="17" ry="2" fill="#5b1d2a"/>
+                <rect id="avTeeth" x="187" y="312" width="26" height="4.5" rx="2" fill="#fff" opacity="0"/>
+                <path id="avUp" d="M178 315 Q189 307 200 311 Q211 307 222 315 Q200 317 178 315Z" fill="#c25f6a"/>
+                <path id="avLow" d="M178 316 Q200 330 222 316 Q200 320 178 316Z" fill="#d2717c"/>
+              </g>
+              <path d="M122 222 C116 150 170 126 206 130 C252 134 288 166 278 228 C262 192 236 172 200 175 C172 178 146 192 132 218Z" fill="url(#avHair)"/>
+              <path d="M118 246 C110 140 290 140 282 246" stroke="#1c1a2c" stroke-width="7" fill="none" stroke-linecap="round"/>
+              <rect x="104" y="232" width="22" height="42" rx="10" fill="#1c1a2c"/>
+              <rect x="274" y="232" width="22" height="42" rx="10" fill="#1c1a2c"/>
+              <path d="M116 268 Q136 330 180 328" stroke="#1c1a2c" stroke-width="4" fill="none" stroke-linecap="round"/>
+              <circle id="avMic" cx="183" cy="328" r="5" fill="#40e6ff"/>
+            </g>
+          </g>
+        </svg>
+        <span class="avatar-hint" id="avatarHint"><i></i><span data-v="talk"></span></span>
+      </button>
+      <div class="captions" id="captions" dir="auto"></div>
+      <div class="call-bar">
+        <select class="nova-lang call-lang" aria-label="Language"><option value="en">English</option><option value="ar">عربي مصري</option><option value="arm">عربي فصحى</option><option value="de">Deutsch</option><option value="ru">Русский</option></select>
+        <button class="call-btn" id="callBtn"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+        <button class="call-end" id="callEnd" aria-label="End call"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M3 15c5-5 13-5 18 0l-3 3-3-2v-3a12 12 0 0 0-6 0v3l-3 2z"/></svg></button>
+      </div>
+      <form class="call-type" id="callType"><input id="callText" autocomplete="off" dir="auto" data-i18n-ph="d8.ph"><button class="send" type="submit" aria-label="Send"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M3 20l18-8L3 4v6l12 2-12 2z"/></svg></button></form>
+    </div>
+    <div class="demo-head">
+      <p class="eyebrow"><span class="demo-no">08</span><span data-i18n="d8.eyebrow"></span></p>
+      <h2 class="h2 split" data-i18n-html="d8.title"></h2>
+      <p class="lead rv" data-i18n="d8.sub"></p>
+      <ul class="av-points rv">
+        <li data-i18n="d8.b1"></li><li data-i18n="d8.b2"></li><li data-i18n="d8.b3"></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ROI CALCULATOR -->
+<section class="roi" id="roi" data-scene="testi">
+  <div class="demo-head center">
+    <p class="eyebrow" data-i18n="roi.eyebrow"></p>
+    <h2 class="h2 split" data-i18n-html="roi.title"></h2>
+    <p class="lead rv" data-i18n="roi.sub"></p>
+  </div>
+  <div class="roi-box glass rv">
+    <div class="roi-inputs">
+      <label><span data-i18n="roi.team"></span><b id="rTeamV">25</b><input type="range" id="rTeam" min="1" max="500" value="25"></label>
+      <label><span data-i18n="roi.hours"></span><b id="rHoursV">12</b><input type="range" id="rHours" min="1" max="40" value="12"></label>
+      <label><span data-i18n="roi.rate"></span><b id="rRateV">$35</b><input type="range" id="rRate" min="10" max="150" value="35"></label>
+      <div class="roi-tools">
+        <span class="field-label" data-i18n="roi.tools"></span>
+        <div class="chips" id="rTools">
+          <button class="chip is-on" data-auto=".35" data-i18n="cap5.title"></button>
+          <button class="chip is-on" data-auto=".25" data-i18n="cap3.title"></button>
+          <button class="chip" data-auto=".2" data-i18n="cap4.title"></button>
+          <button class="chip" data-auto=".15" data-i18n="cap7.title"></button>
+          <button class="chip" data-auto=".15" data-i18n="cap2.title"></button>
+        </div>
+      </div>
+    </div>
+    <div class="roi-out">
+      <div class="roi-big"><small data-i18n="roi.saved"></small><b id="rMoney">$0</b></div>
+      <div class="roi-row">
+        <div><small data-i18n="roi.hoursYear"></small><b id="rHrs">0</b></div>
+        <div><small data-i18n="roi.fte"></small><b id="rFte">0</b></div>
+      </div>
+      <div class="roi-bars">
+        <div><span data-i18n="roi.before"></span><i class="bar b1"><em id="rBar1"></em></i></div>
+        <div><span data-i18n="roi.after"></span><i class="bar b2"><em id="rBar2"></em></i></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STORIES -->
+<section class="stories" id="stories" data-scene="testi">
+  <div class="demo-head center">
+    <p class="eyebrow" data-i18n="st.eyebrow"></p>
+    <h2 class="h2 split" data-i18n-html="st.title"></h2>
+  </div>
+  <div class="story-grid">
+    <figure class="story glass tilt rv"><blockquote data-i18n="tq1"></blockquote><figcaption><span class="av" style="--a:#ff5fb0">LH</span><div><b>Lina Haddad</b><small data-i18n="tr1"></small></div></figcaption></figure>
+    <figure class="story glass tilt rv"><blockquote data-i18n="tq2"></blockquote><figcaption><span class="av" style="--a:#40e6ff">JW</span><div><b>Jonas Weber</b><small data-i18n="tr2"></small></div></figcaption></figure>
+    <figure class="story glass tilt rv"><blockquote data-i18n="tq3"></blockquote><figcaption><span class="av" style="--a:#8b6cff">MV</span><div><b>Maria Volkova</b><small data-i18n="tr3"></small></div></figcaption></figure>
+  </div>
+  <div class="logos rv" aria-hidden="true"><span>SOUQ NOVA</span><span>KRAFTWERK</span><span>POLAR</span><span>ATLAS</span><span>NORDWIND</span><span>MIRAGE</span></div>
+</section>
+
+<!-- CTA -->
+<section class="cta" id="contact" data-scene="cta">
+  <div class="cta-inner">
+    <p class="eyebrow" data-i18n="cta.eyebrow"></p>
+    <h2 class="h1 split" data-i18n-html="cta.title"></h2>
+    <p class="lead rv" data-i18n="cta.sub"></p>
+    <form class="cta-form rv" id="ctaForm">
+      <input type="email" required id="ctaEmail" data-i18n-ph="cta.ph">
+      <button class="btn btn-glow mag" type="submit"><span data-i18n="cta.btn"></span></button>
+    </form>
+    <p class="cta-ok" id="ctaOk" data-i18n="cta.ok"></p>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="footer-top">
+    <div class="f-brand">
+      <a href="#top" class="logo"><span class="logo-mark"><i></i></span><span class="logo-word">Imagination</span></a>
+      <p data-i18n="f.tag"></p>
+    </div>
+    <div class="f-col"><b data-i18n="f.product"></b><a href="#vision" data-i18n="cap2.title"></a><a href="#code" data-i18n="cap4.title"></a><a href="#agent" data-i18n="cap5.title"></a><a href="#payments" data-i18n="cap6.title"></a><a href="#crm" data-i18n="cap7.title"></a></div>
+    <div class="f-col"><b data-i18n="f.company"></b><a href="#stories" data-i18n="f.about"></a><a href="#contact" data-i18n="f.careers"></a><a href="#contact" data-i18n="f.contact"></a></div>
+    <div class="f-col"><b data-i18n="f.legal"></b><a href="#top" data-i18n="f.privacy"></a><a href="#top" data-i18n="f.terms"></a></div>
+  </div>
+  <div class="footer-giant" aria-hidden="true">IMAGINATION</div>
+  <div class="footer-bottom"><span data-i18n="f.rights"></span></div>
+  <div class="made-by">Made by Magmafy</div>
+</footer>
+
+</div>
+</div>
+
+<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollSmoother.min.js"></script>
+<script defer src="js/i18n.js"></script>
+<script defer src="js/demos.js"></script>
+<script defer src="js/vision.js"></script>
+<script defer src="js/main.js"></script>
+<script defer src="js/voice.js"></script>
+<script defer src="js/avatar.js"></script>
+<script type="module" src="js/scene.js"></script>
+</body>
+</html>

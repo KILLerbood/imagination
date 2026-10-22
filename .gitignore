@@ -1,0 +1,5 @@
+# never commit secrets or local notes
+*.key
+*-key.txt
+.env
+*.log

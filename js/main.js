@@ -102,6 +102,9 @@
     if (horizTween) { horizTween.scrollTrigger.kill(true); horizTween.kill(); horizTween = null; }
     const wrap = $('.horiz-gallery-wrapper'), strip = $('.horiz-gallery-strip');
     gsap.set(strip, { x: 0 });
+    // Phones/tablets: no pinned sideways scroll. Moving one ~3000px-wide layer with a 3x screen made
+    // iOS Safari run out of GPU memory right after this section. A native swipe row costs nothing.
+    if (!fine) { wrap.classList.add('is-swipe'); return; }
     const dist = () => Math.max(0, strip.scrollWidth - window.innerWidth);
     horizTween = gsap.to(strip, {
       x: () => (document.documentElement.dir === 'rtl' ? 1 : -1) * dist(),

@@ -7,10 +7,22 @@
 <title>Imagination — AI tools that make it real</title>
 <meta name="description" content="Imagination is an AI platform for images, code, writing, customer service, payments and CRM. Try every tool live.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%238b6cff'/%3E%3Cstop offset='1' stop-color='%2340e6ff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='32' cy='32' r='26' fill='url(%23g)'/%3E%3Ccircle cx='32' cy='32' r='10' fill='%2304040a'/%3E%3C/svg%3E">
-<link rel="preconnect" href="https://fonts.googleapis.com">
+<script>
+  // iOS crash guard: if the previous visit ended without a clean "pagehide" (the tab was killed),
+  // open this visit in a light mode without WebGL so it can never crash twice in a row.
+  try {
+    if (sessionStorage.getItem('imgn-alive') === '1' || /[?&]lite=1/.test(location.search)) document.documentElement.classList.add('lite');
+    sessionStorage.setItem('imgn-alive', '1');
+    addEventListener('pagehide', function () { sessionStorage.removeItem('imgn-alive'); });
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'hidden') sessionStorage.removeItem('imgn-alive');
+      else sessionStorage.setItem('imgn-alive', '1');
+    });
+  } catch (e) {}
+</script><link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/style.css?v=4">
 <script type="importmap">
 { "imports": {
   "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
@@ -751,12 +763,16 @@
 <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollSmoother.min.js"></script>
-<script defer src="js/i18n.js"></script>
-<script defer src="js/demos.js"></script>
-<script defer src="js/vision.js"></script>
-<script defer src="js/main.js"></script>
-<script defer src="js/voice.js"></script>
-<script defer src="js/avatar.js"></script>
-<script type="module" src="js/scene.js"></script>
+<script defer src="js/i18n.js?v=4"></script>
+<script defer src="js/demos.js?v=4"></script>
+<script defer src="js/vision.js?v=4"></script>
+<script defer src="js/main.js?v=4"></script>
+<script defer src="js/voice.js?v=4"></script>
+<script defer src="js/avatar.js?v=4"></script>
+<script type="module">
+  // skip WebGL entirely in the crash-recovery 'lite' mode (see the head script)
+  if (document.documentElement.classList.contains('lite')) dispatchEvent(new Event('scene-ready'));
+  else import('./js/scene.js?v=4');
+</script>
 </body>
 </html>
